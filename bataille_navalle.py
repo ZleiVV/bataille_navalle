@@ -115,6 +115,25 @@ def placement_manuel(grille):
                 print("Placement impossible ici. Réessayez.")
     return bateaux
 
+def tirer(grille, bateaux, pos):
+    r, c = pos
+    val = grille[r][c]
+    if val == 0:
+        grille[r][c] = 'X'
+        return 'manqué', None
+    elif val == 'B':
+        grille[r][c] = 'T'
+        bateau_coule = None
+        for nom, coords in bateaux.items():
+            if (r, c) in coords:
+                if all(grille[rr][cc] == 'T' for rr, cc in coords):
+                    bateau_coule = nom
+                break
+        return 'touché', bateau_coule
+    elif val in ('T', 'X'):
+        return 'déjà', None
+    return 'manqué', None
+
 # --- Code de test ---
 if __name__ == "__main__":
     print("Test du placement aléatoire des bateaux :")
@@ -127,3 +146,27 @@ if __name__ == "__main__":
     ma_grille_man = creer_grille_vide()
     bateaux_man = placement_manuel(ma_grille_man)
     print("Bateaux placés manuellement :", bateaux_man)
+
+    # --- Mini-test pour vérifier le système de tirs ---
+if __name__ == "__main__":
+    print("=== Test des tirs ===")
+    # Crée une grille et place les bateaux
+    ma_grille = creer_grille_vide()
+    bateaux = placement_aleatoire(ma_grille)
+    
+    print("Grille initiale avec bateaux (révélée) :")
+    afficher_grille(ma_grille, reveler=True)
+    
+    # Tir sur 5 positions aléatoires
+    import random
+    for _ in range(5):
+        r = random.randrange(TAILLE_GRILLE)
+        c = random.randrange(TAILLE_GRILLE)
+        resultat, coule = tirer(ma_grille, bateaux, (r, c))
+        col = COLONNES[c]
+        print(f"Tir en {col}{r+1} -> {resultat}", end='')
+        if coule:
+            print(f" et coulé le {coule}")
+        else:
+            print()
+        afficher_grille(ma_grille, reveler=True)
