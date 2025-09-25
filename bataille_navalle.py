@@ -183,33 +183,27 @@ def tour_joueur(grille_adverse, bateaux_adverses, vue_adverse):
                 print("Touché !")
         break
 
+def tous_coules(bateaux, grille):
+    for coords in bateaux.values():
+        for (r, c) in coords:
+            if grille[r][c] != 'T':
+                return False
+    return True
+
 # --- Code de test ---
 if __name__ == "__main__":
-    print("=== Test interactif des tours joueur et IA ===")
+    print("=== Test de la fonction tous_coules ===")
+    ma_grille = creer_grille_vide()
+    bateaux = placement_aleatoire(ma_grille)
     
-    # Créer les grilles et placer les bateaux
-    grille_joueur = creer_grille_vide()
-    bateaux_joueur = placement_aleatoire(grille_joueur)
+    print("Grille initiale avec bateaux (révélée) :")
+    afficher_grille(ma_grille, reveler=True)
+    print("Tous coulés ?", tous_coules(bateaux, ma_grille))  # Devrait être False
+
+    # Simuler que tous les bateaux sont touchés
+    for coords in bateaux.values():
+        for r, c in coords:
+            ma_grille[r][c] = 'T'
     
-    grille_adverse = creer_grille_vide()
-    bateaux_adverse = placement_aleatoire(grille_adverse)
-    
-    vue_adverse = creer_grille_vide()
-    memoire_ia = set()
-    
-    print("\nGrille du joueur (révélée) :")
-    afficher_grille(grille_joueur, reveler=True)
-    
-    print("\nGrille adverse (révélée) :")
-    afficher_grille(grille_adverse, reveler=True)
-    
-    # Jouer 3 tours interactifs pour tester
-    for i in range(3):
-        print(f"\n--- Tour {i+1} ---")
-        tour_joueur(grille_adverse, bateaux_adverse, vue_adverse)
-        tour_ia(grille_joueur, bateaux_joueur, memoire_ia)
-        
-        print("\nGrille du joueur après tir IA :")
-        afficher_grille(grille_joueur, reveler=True)
-        print("\nVue du joueur sur l'adversaire :")
-        afficher_grille(vue_adverse, reveler=False)
+    afficher_grille(ma_grille, reveler=True)
+    print("Tous coulés après simulation ?", tous_coules(bateaux, ma_grille))  # Devrait être True
