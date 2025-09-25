@@ -134,39 +134,82 @@ def tirer(grille, bateaux, pos):
         return 'déjà', None
     return 'manqué', None
 
+def tour_ia(grille_joueur, bateaux_joueur, memoire_ia):
+    candidats = [(r, c) for r in range(TAILLE_GRILLE) for c in range(TAILLE_GRILLE) if (r, c) not in memoire_ia]
+    pos = random.choice(candidats)
+    memoire_ia.add(pos)
+    resultat, coule = tirer(grille_joueur, bateaux_joueur, pos)
+    col = COLONNES[pos[1]]
+    print(f"L'ordinateur tire en {col}{pos[0]+1} -> {resultat}", end='')
+    if coule:
+        print(f" et coulé votre {coule} !")
+    else:
+        print()
+    return resultat
+
+import sys
+
+def tour_joueur(grille_adverse, bateaux_adverses, vue_adverse):
+    print("--- Votre tour ---")
+    afficher_grille(vue_adverse, reveler=False)
+    while True:
+        brut = input("Entrez une coordonnée à tirer (ex A5) ou 'q' pour quitter: ").strip()
+        if brut.lower() == 'q':
+            print("A bientôt !")
+            sys.exit(0)
+        pos = convertir_coordonnees(brut)
+        if not pos:
+            print("Coordonnée invalide.")
+            continue
+        resultat, coule = tirer(grille_adverse, bateaux_adverses, pos)
+        r, c = pos
+
+        # Mettre à jour la vue du joueur
+        if resultat == 'touché':
+            vue_adverse[r][c] = 'T'
+        elif resultat == 'manqué':
+            vue_adverse[r][c] = 'X'
+
+        # Messages au joueur
+        if resultat == 'déjà':
+            print("Vous avez déjà tiré ici.")
+            continue
+        elif resultat == 'manqué':
+            print("Manqué !")
+        elif resultat == 'touché':
+            if coule:
+                print(f"Touché et coulé ! Vous avez coulé le {coule}.")
+            else:
+                print("Touché !")
+        break
+
 # --- Code de test ---
 if __name__ == "__main__":
-    print("Test du placement aléatoire des bateaux :")
-    ma_grille_auto = creer_grille_vide()
-    bateaux_auto = placement_aleatoire(ma_grille_auto)
-    afficher_grille(ma_grille_auto, reveler=True)
-    print("Bateaux placés automatiquement :", bateaux_auto)
-
-    print("\nTest du placement manuel :")
-    ma_grille_man = creer_grille_vide()
-    bateaux_man = placement_manuel(ma_grille_man)
-    print("Bateaux placés manuellement :", bateaux_man)
-
-    # --- Mini-test pour vérifier le système de tirs ---
-if __name__ == "__main__":
-    print("=== Test des tirs ===")
-    # Crée une grille et place les bateaux
-    ma_grille = creer_grille_vide()
-    bateaux = placement_aleatoire(ma_grille)
+    print("=== Test interactif des tours joueur et IA ===")
     
-    print("Grille initiale avec bateaux (révélée) :")
-    afficher_grille(ma_grille, reveler=True)
+    # Créer les grilles et placer les bateaux
+    grille_joueur = creer_grille_vide()
+    bateaux_joueur = placement_aleatoire(grille_joueur)
     
-    # Tir sur 5 positions aléatoires
-    import random
-    for _ in range(5):
-        r = random.randrange(TAILLE_GRILLE)
-        c = random.randrange(TAILLE_GRILLE)
-        resultat, coule = tirer(ma_grille, bateaux, (r, c))
-        col = COLONNES[c]
-        print(f"Tir en {col}{r+1} -> {resultat}", end='')
-        if coule:
-            print(f" et coulé le {coule}")
-        else:
-            print()
-        afficher_grille(ma_grille, reveler=True)
+    grille_adverse = creer_grille_vide()
+    bateaux_adverse = placement_aleatoire(grille_adverse)
+    
+    vue_adverse = creer_grille_vide()
+    memoire_ia = set()
+    
+    print("\nGrille du joueur (révélée) :")
+    afficher_grille(grille_joueur, reveler=True)
+    
+    print("\nGrille adverse (révélée) :")
+    afficher_grille(grille_adverse, reveler=True)
+    
+    # Jouer 3 tours interactifs pour tester
+    for i in range(3):
+        print(f"\n--- Tour {i+1} ---")
+        tour_joueur(grille_adverse, bateaux_adverse, vue_adverse)
+        tour_ia(grille_joueur, bateaux_joueur, memoire_ia)
+        
+        print("\nGrille du joueur après tir IA :")
+        afficher_grille(grille_joueur, reveler=True)
+        print("\nVue du joueur sur l'adversaire :")
+        afficher_grille(vue_adverse, reveler=False)
