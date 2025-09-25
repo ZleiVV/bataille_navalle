@@ -190,20 +190,49 @@ def tous_coules(bateaux, grille):
                 return False
     return True
 
-# --- Code de test ---
-if __name__ == "__main__":
-    print("=== Test de la fonction tous_coules ===")
-    ma_grille = creer_grille_vide()
-    bateaux = placement_aleatoire(ma_grille)
-    
-    print("Grille initiale avec bateaux (révélée) :")
-    afficher_grille(ma_grille, reveler=True)
-    print("Tous coulés ?", tous_coules(bateaux, ma_grille))  # Devrait être False
+def jouer():
+    print("Bienvenue à la Bataille Navale — Joueur vs Ordinateur")
+    grille_joueur = creer_grille_vide()
+    grille_adverse = creer_grille_vide()
 
-    # Simuler que tous les bateaux sont touchés
-    for coords in bateaux.values():
-        for r, c in coords:
-            ma_grille[r][c] = 'T'
-    
-    afficher_grille(ma_grille, reveler=True)
-    print("Tous coulés après simulation ?", tous_coules(bateaux, ma_grille))  # Devrait être True
+    choix = None
+    while choix not in ('1', '2'):
+        print("Choisissez le placement des bateaux:")
+        print("1) Placement automatique")
+        print("2) Placement manuel")
+        choix = input("Votre choix (1/2): ").strip()
+
+    if choix == '1':
+        bateaux_joueur = placement_aleatoire(grille_joueur)
+    else:
+        bateaux_joueur = placement_manuel(grille_joueur)
+
+    bateaux_adverses = placement_aleatoire(grille_adverse)
+    vue_adverse = creer_grille_vide()
+    memoire_ia = set()
+
+    while True:
+        print("\nVotre flotte:")
+        afficher_grille(grille_joueur, reveler=True)
+        print("\nVotre vue de l'ennemi:")
+        afficher_grille(vue_adverse, reveler=False)
+
+        tour_joueur(grille_adverse, bateaux_adverses, vue_adverse)
+        if tous_coules(bateaux_adverses, grille_adverse):
+            print("Félicitations — vous avez coulé toute la flotte ennemie ! Vous gagnez ! 🎉")
+            break
+
+        tour_ia(grille_joueur, bateaux_joueur, memoire_ia)
+        if tous_coules(bateaux_joueur, grille_joueur):
+            print("Dommage — l'ordinateur a coulé toute votre flotte. Vous perdez.")
+            break
+
+    print("\nGrille ennemie complète :")
+    afficher_grille(grille_adverse, reveler=True)
+    print("\nMerci d'avoir joué !")
+
+if __name__ == '__main__':
+    try:
+        jouer()
+    except KeyboardInterrupt:
+        print("\nJeu interrompu. À la prochaine !")
